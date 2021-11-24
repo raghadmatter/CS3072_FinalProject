@@ -157,16 +157,21 @@ av_crime <- crimes %>% group_by(state, state_abbr) %>% summarize(av_population =
 
 ```
 ```{r}
-library(sf)
-library(tidyverse)
-statesmap<-st_read("C:/Users/manal/OneDrive/Desktop/CS3072_FinalProject/Datasets/datasets/state_map.shp")
-
+statesmap<-st_read("C:/Users/manal/OneDrive/Desktop/CS3072_FinalProject/Datasets/datasets/cb_2018_us_state_5m.shp")
 
 ```
 
 ```{r}
-ggplot(data = av_crime, aes(geometry = geometry))+
-  geom_sf(aes(fill=crime_num)) +
+statesmap <- rename(statesmap, state_abbr = STUSPS)
+```
+
+```{r}
+crime_map <- full_join (statesmap, av_crime, by = c("state_abbr"))
+```
+
+```{r}
+ggplot(data = crime_map, aes(geometry = geometry))+
+  geom_sf(aes(fill="state_abbr")) +
   scale_fill_manual(values = c("#DE0100", "#0015BC")) +
   labs(
     title = "crime rates from 1984 to 2019"
