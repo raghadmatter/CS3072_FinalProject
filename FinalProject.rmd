@@ -179,3 +179,359 @@ ggplot(data = crime_map, aes(geometry = geometry))+
   theme_bw()
 
 ```
+av_crime <- crimes %>% group_by(state, state_abbr) %>% summarize(av_population = mean(population), crime_num = mean(total_crime), crime_rate = (crime_num/av_population)*100, pcrime = mean(property_crime), pcrime_rate = (pcrime/ av_population)*100, vcrime = mean(violent_crime), vcrime_rate = (vcrime/av_population)*100)
+
+```
+
+
+Does higher average income  mean less crime or the opposite. (explore)
+
+```{r}
+
+av_income <- edu_finance %>% group_by(state, state_abbr) %>% summarize(av_population = mean(population),   crime_num =mean(total_crime),crime_rate =(crime_num/av_population)*100, vincome= mean(income), vcrime_rate = (vincome/av_population)*100)
+
+```
+
+
+
+
+
+```{r}
+
+av_unemployement <- edu_finance %>% group_by(state, state_abbr, year, unemployment) %>% summarize(av_population = mean(population),   crime_num =mean(total_crime),crime_rate =(crime_num/av_population)*100)
+
+```
+
+
+```{r}
+ggplot(av_income,mapping=aes(x=crime_rate  , y= vincome, color=state_abbr))+geom_point( ) + 
+  labs(title = "Does higher average income mean less crime or the opposite?",x = "INCOME", y = "Crime Rate")+theme_bw()
+
+```
+
+
+```{r}
+
+crime_USA_filtered <- crime_usa %>% group_by(state, state_abbr, year, income, unemployment)%>% filter ( year >= 2007)%>% summarize(  crime_num =mean(total_crime),crime_rate =(crime_num/population)*100)
+
+
+ggplot(crime_USA_filtered,mapping=aes(x= income, y= crime_rate))+geom_line() +  labs(title = "Does higher average income mean less crime or the opposite?",x = "Income", y = "Crime Rate")+theme_bw()
+```
+
+
+
+
+
+```{r}
+
+
+ggplot(crime_USA_filtered,mapping=aes(x=year , y=crime_rate ))+geom_step() +  labs(title = "Does lower unemployement rate mean less crime?",x = "year", y = "crime rate")+theme_bw()
+
+
+ggplot(crime_USA_filtered,mapping=aes(x=year , y=unemployment ))+geom_step() +  labs(title = "Does lower unemployement rate mean less crime?",x = "year", y = "Unemployment")+theme_dark()
+
+
+
+ggplot(crime_USA_filtered,mapping=aes(x=year  , y= crime_rate, color=unemployment))+geom_point( ) + 
+  labs(title = "Unemployment vs crime rate",x = "year", y = "Crime Rate")+theme_bw()
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+```{r}
+
+
+
+
+unemployment_model <- lm(crime_rate ~ unemployment, data = av_unemployement)
+tidy(unemployment_model)
+
+
+
+
+
+```
+
+crimeRate= 2.3+0.13UnemployementPercentile.
+
+```{r}
+
+
+```
+
+```{r}
+
+
+unemployment_model %>% 
+  augment() %>% 
+  ggplot(mapping = aes(x = unemployment, y = crime_rate)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_point(mapping = aes(y = .fitted)) +
+  geom_segment(mapping = aes(xend = unemployment, yend = .fitted), 
+               alpha = 0.4, color="red") +
+  ylim(0, 5) +
+  labs(x = "unemployment", y = "crime_rate") +
+  theme_bw() + labs(title = "Linear Regression between Unemployement and Crime Rates",x = "Unemployement", y = "Crime Rates")+theme_bw()
+
+
+
+
+
+
+
+```
+
+
+
+Does spending more money on the education system lower crime rate? Total Expenditure Vs. Total Revenue Vs Crime Rates (explore)
+
+```{r}
+
+
+
+
+
+
+
+
+
+
+
+```
+
+
+
+
+
+```{r}
+edu_finance3 <- edu_finance %>% group_by(state,state_abbr)%>%summarize(av_population = mean(population),crime_num =mean(total_crime),crime_rate =(crime_num/av_population)*100, av_total_rev= mean(TOTAL_REVENUE)/1000000, av_total_exp = mean(TOTAL_EXPENDITURE)/1000000, av_total_enroll = mean(ENROLL)/100000)%>%
+  arrange(desc(crime_rate))
+
+edu_finance4<-edu_finance3[c(1,7, 14, 21, 28, 35, 42, 49),]
+  
+  
+```
+
+```{r}
+    library(lubridate)
+    library(tidyverse)
+
+  ggplot(edu_finance4, aes(x=year ,y= exp, color=crime_rate)) +
+  geom_line() + scale_fill_gradient(low = "#ffff00", high = "#ff00ff") + labs(title = "Does spending more money in the education system lower Crime Rates?",x = "Year", y = "Expenditure ($m)")+theme_bw() + facet_wrap(~state)
+  
+```
+```{r}
+edu_finance4<-filter(edu_finance3, state %in% c("District of Columbia", "Washington", "Oklahoma", "Colorado", "Virginia", "New York"))
+  
+```
+
+```{r}
+edu_finance4 <- mutate(edu_finance4, exp = vTOTAL_EXPENDITURE/1000000)
+```
+
+
+```{r}
+install.packages('caret', dependencies = TRUE)
+```
+
+```{r}
+install.packages('DEoptimR') 
+install.packages("caret", dependencies = TRUE)
+```
+```{r}
+install.packages("caret",dep = TRUE)
+install.packages("ggplot2")
+install.packages("lattice")
+install.packages("lava")
+install.packages("purrr")
+
+library(ggplot2)
+library(lattice)
+library(lava)
+library(purrr)
+library(caret)
+```
+
+
+```{r}
+install.packages("installr")
+
+library(installr)
+
+updateR()
+```
+
+```{r}
+library(caret)
+```
+
+
+```{r}
+pred_crime <- read.csv('C:/Users/manal/OneDrive/Desktop/CS3072_FinalProject/Datasets/datasets/MODIFIED/crime_dataset.csv')
+```
+
+```{r}
+str(pred_crime)
+head(pred_crime[, 1:10])
+```
+```{r}
+#install.packages("dplyr") 
+library(dplyr)
+```
+
+
+```{r}
+pred_crime <- filter(pred_crime, !is.na(violent_crime), !is.na(income))
+```
+
+
+```{r}
+# Create the training and test datasets
+set.seed(100)
+```
+
+
+```{r}
+# Step 1: Get row numbers for the training data
+trainRowNumbers <- createDataPartition(y=pred_crime$total_crime, p=0.8, list=FALSE)
+
+# Step 2: Create the training  dataset
+trainData <- pred_crime[trainRowNumbers,]
+
+# Step 3: Create the test dataset
+testData <- pred_crime[-trainRowNumbers,]
+
+# Store X and Y for later use.
+x = trainData[2:18,]
+y = trainData$total_crime
+```
+
+```{r}
+install.packages("skimr") 
+library(skimr)
+```
+```{r}
+skimmed <- skim_to_wide(trainData)
+skimmed[, c(1:5, 9:11, 13, 15:16)]
+```
+
+
+```{r}
+# Create the knn imputation model on the training data
+preProcess_missingdata_model <- preProcess(trainData, method='knnImpute')
+preProcess_missingdata_model
+
+# Use the imputation model to predict the values of missing data points
+library(RANN)  # required for knnImpute
+trainData <- predict(preProcess_missingdata_model, newdata = trainData)
+anyNA(trainData)
+```
+
+
+```{r}
+#dummies_model <- dummyVars(total_crime ~ ., data=trainData)
+
+#trainData_mat <- predict(dummies_model, newdata = trainData)
+
+#trainData <- data.frame(trainData_mat)
+
+#str(trainData)
+
+```
+
+```{r}
+modelnames <- paste(names(getModelInfo()), collapse=',  ')
+modelnames
+
+```
+
+```{r}
+modelLookup("logreg")
+
+```
+
+```{r}
+set.seed(100)
+options(warn=-1)
+
+subsets <- c(1:13, 15:16)
+
+ctrl <- rfeControl(functions = rfFuncs,
+                   method = "repeatedcv",
+                   repeats = 5,
+                   verbose = FALSE)
+
+lmProfile <- rfe(x=trainData[subsets], y=trainData$total_crime,
+                 sizes = subsets,
+                 rfeControl = ctrl)
+
+lmProfile
+```
+
+```{r}
+preProcess_range_model <- preProcess(trainData, method='range')
+trainData <- predict(preProcess_range_model, newdata = trainData)
+```
+
+
+```{r}
+# Step 1: Impute missing values 
+testData2 <- predict(preProcess_missingdata_model, testData)  
+
+# Step 3: Transform the features to range between 0 and 1
+#testData3 <- predict(preProcess_range_model, testData2)
+
+# View
+head(testData2[, 1:10])
+```
+```{r}
+model_mars = train(total_crime ~ ., data=trainData, method='earth')
+fitted <- predict(model_mars)
+model_mars
+
+```
+
+
+```{r}
+# Predict on testData
+predicted <- predict(model_mars, testData2)
+head(predicted)
+```
+
+```{r}
+set.seed(100)
+
+# Train the model using rf
+model_rf = train(total_crime ~ ., data=trainData, method='rf', tuneLength=5)
+model_rf
+
+```
+
+```{r}
+set.seed(100)
+
+# Train the model using SVM
+model_svmRadial = train(total_crime ~ ., data=trainData, method='svmRadial', tuneLength=15, trControl = fitControl)
+model_svmRadial
+```
+
+```{r}
+set.seed(100)
+
+# Train the model using adaboost
+model_adaboost = train(total_crime ~ ., data=trainData, method='adaboost', tuneLength=2, trControl = fitControl)
+model_adaboost
+
+```
+
