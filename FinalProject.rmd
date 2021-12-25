@@ -324,20 +324,21 @@ edu_finance4<-edu_finance3[c(1,7, 14, 21, 28, 35, 42, 49),]
 ```
 
 ```{r}
-    library(lubridate)
-    library(tidyverse)
-
-  ggplot(edu_finance4, aes(x=year ,y= exp, color=crime_rate)) +
-  geom_line() + scale_fill_gradient(low = "#ffff00", high = "#ff00ff") + labs(title = "Does spending more money in the education system lower Crime Rates?",x = "Year", y = "Expenditure ($m)")+theme_bw() + facet_wrap(~state)
-  
-```
-```{r}
-edu_finance4<-filter(edu_finance3, state %in% c("District of Columbia", "Washington", "Oklahoma", "Colorado", "Virginia", "New York"))
+edu_finance4<-filter(edu_finance2, state %in% c("District of Columbia", "Washington", "Oklahoma", "Colorado", "Virginia", "New York")) %>% group_by(year)
   
 ```
 
 ```{r}
 edu_finance4 <- mutate(edu_finance4, exp = vTOTAL_EXPENDITURE/1000000)
+```
+
+```{r}
+    library(lubridate)
+    library(tidyverse)
+
+  ggplot(edu_finance4, aes(x=year ,y= crime_rate, size=exp)) +
+  geom_point() + scale_fill_gradient(low = "#ffff00", high = "#ff00ff") + labs(title = "Does spending more money in the education system lower Crime Rates?",x = "Year", y = "Crime rate")+theme_bw() 
+  
 ```
 
 
