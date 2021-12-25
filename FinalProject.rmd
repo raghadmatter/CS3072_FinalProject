@@ -364,13 +364,7 @@ library(caret)
 ```
 
 
-```{r}
-install.packages("installr")
 
-library(installr)
-
-updateR()
-```
 
 ```{r}
 library(caret)
@@ -384,6 +378,7 @@ pred_crime <- read.csv('C:/Users/manal/OneDrive/Desktop/CS3072_FinalProject/Data
 ```{r}
 str(pred_crime)
 head(pred_crime[, 1:10])
+pred_crime2<-pred_crime[1:300,]
 ```
 ```{r}
 #install.packages("dplyr") 
@@ -392,7 +387,7 @@ library(dplyr)
 
 
 ```{r}
-pred_crime <- filter(pred_crime, !is.na(violent_crime), !is.na(income))
+pred_crime <- filter(pred_crime, !is.na(violent_crime), !is.na(income), !is.na(unemployment))
 ```
 
 
@@ -408,10 +403,13 @@ trainRowNumbers <- createDataPartition(y=pred_crime$total_crime, p=0.8, list=FAL
 
 # Step 2: Create the training  dataset
 trainData <- pred_crime[trainRowNumbers,]
-
+trainData$income = as.numeric(gsub(",", "", trainData$income))
+trainData$income = as.numeric(trainData$income)
 # Step 3: Create the test dataset
-testData <- pred_crime[-trainRowNumbers,]
 
+testData <- pred_crime[-trainRowNumbers,]
+testData$income = as.numeric(gsub(",", "", testData$income))
+testData$income = as.numeric(testData$income)
 # Store X and Y for later use.
 x = trainData[2:18,]
 y = trainData$total_crime
@@ -457,7 +455,7 @@ modelnames
 ```
 
 ```{r}
-modelLookup("logreg")
+modelLookup("nodeHarvest")
 
 ```
 
@@ -478,10 +476,8 @@ lmProfile <- rfe(x=trainData[subsets], y=trainData$total_crime,
 
 lmProfile
 ```
-
 ```{r}
-preProcess_range_model <- preProcess(trainData, method='range')
-trainData <- predict(preProcess_range_model, newdata = trainData)
+is.numeric(testData$income)
 ```
 
 
@@ -494,44 +490,100 @@ testData2 <- predict(preProcess_missingdata_model, testData)
 
 # View
 head(testData2[, 1:10])
+is.numeric(testData2$income)
+
 ```
 ```{r}
-model_mars = train(total_crime ~ ., data=trainData, method='earth')
-fitted <- predict(model_mars)
-model_mars
+trainData <- filter(trainData, !is.na(violent_crime), !is.na(income), !is.na(unemployment))
+```
+
+
+```{r}
+#fit control wasnt included
+model_rf = train(total_crime ~ ., data=trainData, method='rf')
+fitted <- predict(model_rf)
+model_rf
 
 ```
 
 
 ```{r}
 # Predict on testData
-predicted <- predict(model_mars, testData2)
+predicted <- predict(model_rf, testData2)
 head(predicted)
 ```
 
-```{r}
-set.seed(100)
 
-# Train the model using rf
-model_rf = train(total_crime ~ ., data=trainData, method='rf', tuneLength=5)
-model_rf
-
-```
 
 ```{r}
 set.seed(100)
 
 # Train the model using SVM
-model_svmRadial = train(total_crime ~ ., data=trainData, method='svmRadial', tuneLength=15, trControl = fitControl)
+model_svmRadial = train(total_crime ~ ., data=trainData, method='svmRadial', tuneLength=15)
 model_svmRadial
+```
+```{r}
+#predict
+testData2 <- filter(testData2, !is.na(violent_crime), !is.na(income), !is.na(unemployment))
+```
+
+```{r}
+# Predict on testData
+predicted <- predict(model_svmRadial, testData2)
+head(predicted)
+```
+
+
+
+```{r}
+set.seed(100)
+
+# Train the model using logreg wrong
+model_logreg = train(total_crime ~ ., data=trainData, method='logreg', tuneLength=2)
+model_logreg
 ```
 
 ```{r}
 set.seed(100)
 
-# Train the model using adaboost
-model_adaboost = train(total_crime ~ ., data=trainData, method='adaboost', tuneLength=2, trControl = fitControl)
-model_adaboost
+# Train the model using nnet
+model_nnet = train(total_crime ~ ., data=trainData, method='nnet', tuneLength=2)
+model_nnet
+```
+
+```{r}
+set.seed(100)
+
+# Train the model using 
+model_ctree = train(total_crime ~ ., data=trainData, method='ctree', tuneLength=2)
+model_ctree
+```
+
+
+```{r}
+set.seed(100)
+
+# Train the model using xgbLinear
+model_xgbLinear = train(total_crime ~ ., data=trainData, method='xgbLinear', tuneLength=2)
+model_xgbLinear
+```
+
+```{r}
+set.seed(100)
+
+# Train the model using nodeHarvest
+model_nodeHarvest = train(total_crime ~ ., data=trainData, method='nodeHarvest', tuneLength=2)
+model_nodeHarvest
+```
+
+```{r}
+# Compare model performances using resample()
+models_compare <- resamples(list(svmRadial=model_svmRadial, NNET=model_nnet, CTREE=model_ctree, XGBLINEAR=model_xgbLinear, NODEHARVEST=model_nodeHarvest))
+```
+
+```{r}
+# Summary of the models performances
+summary(models_compare)
 
 ```
 
