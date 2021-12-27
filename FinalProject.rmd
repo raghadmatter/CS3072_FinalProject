@@ -208,38 +208,10 @@ ggplot(av_income,mapping=aes(x=crime_rate  , y= vincome, color=state_abbr))+geom
   labs(title = "Does higher average income mean less crime or the opposite?",x = "INCOME", y = "Crime Rate")+theme_bw()
 
 ```
+crime_USA_filtered <- crime_usa %>% group_by(state, state_abbr, year, income, unemployment)%>% filter ( year > 2008)%>% summarize(  crime_num =mean(total_crime),crime_rate =(crime_num/population)*100)
 
 
-```{r}
-
-crime_USA_filtered <- crime_usa %>% group_by(state, state_abbr, year, income, unemployment)%>% filter ( year >= 2007)%>% summarize(  crime_num =mean(total_crime),crime_rate =(crime_num/population)*100)
-
-
-ggplot(crime_USA_filtered,mapping=aes(x= income, y= crime_rate))+geom_line() +  labs(title = "Does higher average income mean less crime or the opposite?",x = "Income", y = "Crime Rate")+theme_bw()
-```
-
-
-
-
-
-```{r}
-
-
-ggplot(crime_USA_filtered,mapping=aes(x=year , y=crime_rate ))+geom_step() +  labs(title = "Does lower unemployement rate mean less crime?",x = "year", y = "crime rate")+theme_bw()
-
-
-ggplot(crime_USA_filtered,mapping=aes(x=year , y=unemployment ))+geom_step() +  labs(title = "Does lower unemployement rate mean less crime?",x = "year", y = "Unemployment")+theme_dark()
-
-
-
-ggplot(crime_USA_filtered,mapping=aes(x=year  , y= crime_rate, color=unemployment))+geom_point( ) + 
-  labs(title = "Unemployment vs crime rate",x = "year", y = "Crime Rate")+theme_bw()
-
-
-
-
-```
-
+ggplot(crime_USA_filtered,mapping=aes(x=year , y=unemployment, size= crime_rate ))+geom_jitter() +  labs(title = "Unemployement VS Crime Rate",x = "year", y = "unemployement")+theme_bw()
 
 
 
